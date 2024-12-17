@@ -14,8 +14,8 @@
 
     <!-- Hidden Form to Send Data to Google Form -->
     <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSd7gcA5iPzWVzJx0zZ30ZeqXJ7DePPOju0kVw-VdWl6TUgcGg/formResponse" method="POST" target="hidden_iframe" onsubmit="submitForm()">
-        <!-- Replace entry.123456789 with your short answer field ID -->
-        <input type="hidden" name="entry.123456789" id="serialNumberField">
+        <!-- The serial number will go into this short answer field -->
+        <input type="hidden" name="entry.123456789" id="serialNumberField"> <!-- Use the correct field ID -->
         <input type="submit" value="Submit" style="display:none;">
     </form>
 
@@ -23,15 +23,27 @@
 
     <script>
         function onScanSuccess(decodedText, decodedResult) {
-            // Get serial number from QR code (assuming it's just plain text)
-            document.getElementById("serialNumberField").value = decodedText;
+            // Extract serial number from the QR code
+            console.log("QR Code decoded: ", decodedText);
 
-            // Automatically submit the form after filling the serial number
-            document.getElementById("googleForm").submit();
+            // Find the short answer field using its jsname
+            const shortAnswerField = document.querySelector('[jsname="YPqjbf"]');
+            if (shortAnswerField) {
+                // Set the value of the field
+                shortAnswerField.value = decodedText;
+
+                // Now set the value of the hidden input for submission
+                document.getElementById("serialNumberField").value = decodedText;
+
+                // Automatically submit the form after filling the serial number
+                document.getElementById("googleForm").submit();
+            } else {
+                console.error("Short answer field not found");
+            }
         }
 
         function onScanError(errorMessage) {
-            // Handle scan error (if needed)
+            // Handle any errors that occur during scanning
             console.log(errorMessage);
         }
 
