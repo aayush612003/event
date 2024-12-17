@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <h1>Scan QR Code</h1>
+
+    <!-- Display QR Code Scanner -->
+    <div id="reader" style="width: 600px; height: 400px;"></div>
+
+    <!-- Hidden Form to Send Data to Google Form -->
+    <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSd7gcA5iPzWVzJx0zZ30ZeqXJ7DePPOju0kVw-VdWl6TUgcGg/formResponse" method="POST" target="hidden_iframe" onsubmit="submitForm()">
+        <!-- Replace entry.123456789 with your short answer field ID -->
+        <input type="hidden" name="entry.123456789" id="serialNumberField">
+        <input type="submit" value="Submit" style="display:none;">
+    </form>
+
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // Get serial number from QR code (assuming it's just plain text)
+            document.getElementById("serialNumberField").value = decodedText;
+
+            // Automatically submit the form after filling the serial number
+            document.getElementById("googleForm").submit();
+        }
+
+        function onScanError(errorMessage) {
+            // Handle scan error (if needed)
+            console.log(errorMessage);
+        }
+
+        // Initialize QR Code Scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: 250
+        });
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+</body>
+</html>
