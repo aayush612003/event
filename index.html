@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner with Task Execution</title>
+    <title>QR Code Scanner with Camera Access</title>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
         #reader {
@@ -21,6 +21,10 @@
             font-size: 18px;
             color: green;
         }
+        #errorMessage {
+            color: red;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +41,9 @@
         <!-- Placeholder for tasks that can be triggered after scanning -->
     </div>
 
+    <!-- Display Error Message if Camera Access Fails -->
+    <div id="errorMessage"></div>
+
     <script>
         function onScanSuccess(decodedText, decodedResult) {
             // Display the scanned data on the webpage
@@ -48,7 +55,7 @@
 
         function onScanError(errorMessage) {
             // Handle any errors that occur during scanning
-            console.log(errorMessage);
+            console.log("Error during scan:", errorMessage);
         }
 
         function performOtherTasks(data) {
@@ -74,19 +81,45 @@
 
             // Display the task message
             document.getElementById("otherTask").textContent = taskMessage;
-
-            // You can add additional actions here, such as:
-            // - Updating UI elements
-            // - Calling an API
-            // - Navigating to another page
         }
 
-        // Initialize QR Code Scanner
-        let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-            fps: 10,
-            qrbox: 250
-        });
-        html5QrcodeScanner.render(onScanSuccess, onScanError);
+        // Function to initialize the QR code scanner
+        function initializeScanner() {
+            try {
+                // Initialize QR Code Scanner
+                let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+                    fps: 10,
+                    qrbox: 250
+                });
+
+                // Render the scanner and handle success/error
+                html5QrcodeScanner.render(onScanSuccess, onScanError);
+            } catch (error) {
+                console.error("Error initializing QR Code Scanner: ", error);
+                document.getElementById("errorMessage").textContent = "Error initializing camera. Please check your browser permissions.";
+            }
+        }
+
+        // Wait for the page to load before initializing the scanner
+        window.onload = function() {
+            // Check if the camera is available and initialize the scanner
+            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                navigator.mediaDevices.enumerateDevices().then(devices => {
+                    const cameras = devices.filter(device => device.kind === 'videoinput');
+                    if (cameras.length === 0) {
+                        document.getElementById("errorMessage").textContent = "No camera found. Please check your camera or browser settings.";
+                    } else {
+                        // Initialize the QR scanner after confirming camera availability
+                        initializeScanner();
+                    }
+                }).catch(error => {
+                    console.error("Error accessing camera devices: ", error);
+                    document.getElementById("errorMessage").textContent = "Error accessing camera. Please check your permissions.";
+                });
+            } else {
+                document.getElementById("errorMessage").textContent = "Camera access not supported by this browser.";
+            }
+        };
     </script>
 </body>
 </html>
